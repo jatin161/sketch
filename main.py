@@ -1,13 +1,11 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from oauth2client.service_account import ServiceAccountCredentials
 import cv2
 import io
+import numpy as np
 
 app = FastAPI()
-
-
 
 # Define CORS origins
 origins = [
@@ -23,13 +21,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-def create_sketch(image_path):
-
-    img = cv2.imread(image_path)
+def create_sketch(image_bytes: bytes) -> bytes:
+    # Convert bytes to numpy array
+    np_arr = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     
     if img is None:
-        raise ValueError("Image not found or cannot be loaded. Please check the file path.")
+        raise ValueError("Image cannot be loaded.")
     
     # Convert the image to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -47,32 +45,20 @@ def create_sketch(image_path):
     sketch = cv2.divide(gray, invert, scale=256)
     
     # Convert the sketch image to a byte object
-    _, buffer = cv2.imencode('.jpg', sketch)  # You can change the file extension if needed
+    _, buffer = cv2.imencode('.jpg', sketch)
     byte_object = io.BytesIO(buffer).getvalue()
     
     return byte_object
-
-
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to the FastAPI application!"}
 
-@app.head("/")
-async def head_root():
-    return
-
-class requestpath(BaseModel):
-    path: str
-   
-
-
-@app.get("/create_sketch/{requestpath}")
-async def create_sketch(requestpath: requestpath):
-    path = requestpath.path
- 
-    
-    if create_sketch(path):
-        return {"success": True}
-    else:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+@app.post("/create_sketch/")
+async def create_sketch_endpoint(file: UploadFile = File(...)):
+    try:
+        image_bytes = await file.read()
+        sketch_bytes = create_sketch(image_bytes)
+        return Response(content=sketch_bytes, media_type="image/jpeg")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
