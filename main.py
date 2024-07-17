@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import requests
 import cv2
 import io
 import numpy as np
@@ -54,11 +55,18 @@ def create_sketch(image_bytes: bytes) -> bytes:
 async def root():
     return {"message": "Welcome to the FastAPI application!"}
 
-@app.post("/create_sketch/")
-async def create_sketch_endpoint(file: UploadFile = File(...)):
+@app.get("/create_sketch/")
+async def create_sketch_endpoint(image_url: str = Query(..., description="URL of the image")):
     try:
-        image_bytes = await file.read()
+        # Fetch the image from the URL
+        response = requests.get(image_url)
+        if response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to fetch image from URL")
+        
+        # Process the image bytes
+        image_bytes = response.content
         sketch_bytes = create_sketch(image_bytes)
+        
         return Response(content=sketch_bytes, media_type="image/jpeg")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
