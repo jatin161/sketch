@@ -10,7 +10,7 @@ app = FastAPI()
 
 # Define CORS origins
 origins = [
-    "https://cine-sense.netlify.app"
+    "https://cine-sense.netlify.app","http://localhost:3000/",""
 ]
 
 # Configure CORS
