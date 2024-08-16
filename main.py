@@ -189,12 +189,18 @@ async def create_sketch_basic_endpoint(file: UploadFile = File(...)):
 @app.post("/create_sketch_with_effects/")
 async def create_sketch_with_effects_endpoint(file: UploadFile = File(...),
                                               brightness: float,
-                                              sepia: bool, sepia_intensity: float,
-                                              vignette: bool, vignette_intensity: float,
-                                              sharpen: bool, sharpen_intensity: float,
+                                              sepia: bool, 
+                                              sepia_intensity: float,
+                                              vignette: bool, 
+                                              vignette_intensity: float,
+                                              sharpen: bool, 
+                                              sharpen_intensity: float,
                                               sketch_style: str,
-                                              border: bool, border_size: int, border_color: str,
-                                              frame: bool, frame_type: str):
+                                              border: bool, 
+                                              border_size: int, 
+                                              border_color: str,
+                                              frame: bool, 
+                                              frame_type: str):
     try:
         # Convert the string border_color to a tuple
         border_color_tuple = tuple(map(int, border_color.split(',')))
@@ -213,4 +219,6 @@ async def create_sketch_with_effects_endpoint(file: UploadFile = File(...),
         return Response(content=sketch_bytes, media_type="image/jpeg")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
 
