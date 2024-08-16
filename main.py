@@ -185,10 +185,8 @@ async def create_sketch_basic_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @app.post("/create_sketch_with_effects/")
-async def create_sketch_with_effects_endpoint(file: UploadFile = File(...),
-                                              brightness: float,
+async def create_sketch_with_effects_endpoint(brightness: float,
                                               sepia: bool, 
                                               sepia_intensity: float,
                                               vignette: bool, 
@@ -200,7 +198,9 @@ async def create_sketch_with_effects_endpoint(file: UploadFile = File(...),
                                               border_size: int, 
                                               border_color: str,
                                               frame: bool, 
-                                              frame_type: str):
+                                              frame_type: str,
+                                              file: UploadFile = File(...)):
+
     try:
         # Convert the string border_color to a tuple
         border_color_tuple = tuple(map(int, border_color.split(',')))
