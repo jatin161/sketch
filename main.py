@@ -52,13 +52,20 @@ def create_sketch(image_bytes: bytes) -> bytes:
     return byte_object
 
 # Advanced sketch creation with effects
-def create_sketch_with_effects(image_bytes: bytes, brightness: float = 1.0,
-                               sepia: bool = False, sepia_intensity: float = 1.0,
-                               vignette: bool = False, vignette_intensity: float = 1.0,
-                               sharpen: bool = False, sharpen_intensity: float = 1.0,
-                               sketch_style: str = 'detailed',
-                               border: bool = False, border_size: int = 10, border_color: tuple = (0, 0, 0),
-                               frame: bool = False, frame_type: str = 'classic') -> bytes:
+def create_sketch_with_effects(image_bytes: bytes,
+                               brightness: float,
+                               sepia: bool,
+                               sepia_intensity: float,
+                               vignette: bool,
+                               vignette_intensity: float,
+                               sharpen: bool,
+                               sharpen_intensity: float,
+                               sketch_style: str,
+                               border: bool,
+                               border_size: int,
+                               border_color: tuple,
+                               frame: bool,
+                               frame_type: str) -> bytes:
     # Convert bytes to numpy array
     np_arr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -113,6 +120,8 @@ def create_sketch_with_effects(image_bytes: bytes, brightness: float = 1.0,
     # Encode the processed image back to bytes
     _, buffer = cv2.imencode('.jpg', sketch_bgr)
     return io.BytesIO(buffer).getvalue()
+
+
 
 def apply_sepia(image, intensity=1.0):
     sepia_filter = np.array([[0.272, 0.534, 0.131],
@@ -176,15 +185,16 @@ async def create_sketch_basic_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @app.post("/create_sketch_with_effects/")
 async def create_sketch_with_effects_endpoint(file: UploadFile = File(...),
-                                              brightness: float = 1.0,
-                                              sepia: bool = False, sepia_intensity: float = 1.0,
-                                              vignette: bool = False, vignette_intensity: float = 1.0,
-                                              sharpen: bool = False, sharpen_intensity: float = 1.0,
-                                              sketch_style: str = 'detailed',
-                                              border: bool = False, border_size: int = 10, border_color: str = "0,0,0",
-                                              frame: bool = False, frame_type: str = 'classic'):
+                                              brightness: float,
+                                              sepia: bool, sepia_intensity: float,
+                                              vignette: bool, vignette_intensity: float,
+                                              sharpen: bool, sharpen_intensity: float,
+                                              sketch_style: str,
+                                              border: bool, border_size: int, border_color: str,
+                                              frame: bool, frame_type: str):
     try:
         # Convert the string border_color to a tuple
         border_color_tuple = tuple(map(int, border_color.split(',')))
@@ -203,3 +213,4 @@ async def create_sketch_with_effects_endpoint(file: UploadFile = File(...),
         return Response(content=sketch_bytes, media_type="image/jpeg")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
